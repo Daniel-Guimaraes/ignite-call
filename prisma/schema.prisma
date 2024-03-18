@@ -11,11 +11,45 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid()) // O usuário vai ter um id, que por padrão será no formato uuid().
-  username String @unique //O usuário vai ter um nome de usuário que vai ser único.
-  name     String // Vai ter um nome que vai ser um string
+  id         String   @id @default(uuid())
+  username   String   @unique
+  name       String
+  created_at DateTime @default(now())
+  email      String?  @unique
+  avatar_url String?
 
-  created_at DateTime @default(now()) // a função now() define que o campo vai ser preenchido com o valor atual de registro
+  accounts Account[]
+  sessions Session[]
 
-  @@map("users") // Defini que o nome da minha tabela seja 'users'
+  @@map("users")
+}
+
+model Account {
+  id                  String  @id @default(cuid())
+  user_id             String
+  type                String
+  provider            String
+  provider_account_id String
+  refresh_token       String?
+  access_token        String?
+  expires_at          Int?
+  token_type          String?
+  scope               String?
+  id_token            String?
+  session_state       String?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_account_id])
+  @@map("account")
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  session_token String   @unique
+  user_id       String
+  expires       DateTime
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("session")
 }
